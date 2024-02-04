@@ -34,7 +34,6 @@ CREATE TABLE marital(
 --Table containing the various marital status and their corresponding IDs
 
 CREATE TABLE personal_details(
-    user_id SERIAL PRIMARY KEY,
     account_id INT,
     subscription_year INT,
     user_age INT,
@@ -67,15 +66,14 @@ INSERT INTO housing VALUES
 
 COPY marital from '/Users/Shared/marital.csv' DELIMITER ',' CSV HEADER;
 
+COPY personal_details from '/Users/Shared/personal_details.csv' DELIMITER ',' CSV HEADER;
 
-INSERT INTO personal_details (account_id,
-    subscription_year,
-    user_age,
-    contact_id,
-    job_id,
-    education_id,
-    housing_id,
-    marital_id)
-    select * from temp
 
-select * from personal_details
+select account_id, subscription_year, user_age, contact_name, job_type, education_name, housing_status, marital_status from personal_details
+join contact_type using (contact_id)
+join job using (job_id)
+join education using (education_id)
+join housing using (housing_id)
+join marital using (marital_id)
+
+
