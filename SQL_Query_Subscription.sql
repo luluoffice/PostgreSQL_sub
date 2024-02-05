@@ -69,11 +69,63 @@ COPY marital from '/Users/Shared/marital.csv' DELIMITER ',' CSV HEADER;
 COPY personal_details from '/Users/Shared/personal_details.csv' DELIMITER ',' CSV HEADER;
 
 
-select account_id, subscription_year, user_age, contact_name, job_type, education_name, housing_status, marital_status from personal_details
-join contact_type using (contact_id)
-join job using (job_id)
-join education using (education_id)
-join housing using (housing_id)
-join marital using (marital_id)
+SELECT  account_id,
+        subscription_year,
+        user_age, 
+        contact_name, 
+        job_type, 
+        education_name, 
+        housing_status, 
+        marital_status 
+FROM personal_details
+    JOIN contact_type USING (contact_id)
+    JOIN job USING (job_id)
+    JOIN education USING (education_id)
+    JOIN housing USING (housing_id)
+    JOIN marital USING (marital_id)
 
+-- CREATING FREQUENCY DISTRIBUTION USING VIEWS
+CREATE VIEW filtered_data AS 
+    select account_id, user_age, job_type, education_name, housing_status from personal_details
+            JOIN job USING (job_id)
+            JOIN education USING (education_id)
+            JOIN housing USING (housing_id);
+
+-- VIEW CREATED
+
+-- Computing Frequency distributio, % frequency and cumulative frequency on the user_age accounts
+        
+     SELECT fd as "Frequency_Distribution",
+            counted as "Frequency",
+            100 * counted/sum(counted) OVER () as "% Frequency",
+            SUM(counted) OVER (ORDER BY counted) as "Cummulative"
+    FROM(
+        SELECT  fd,
+                count(fd) as "counted"
+        FROM (
+            SELECT user_age,
+                CASE    WHEN user_age BETWEEN 20 and 30 then '20-30'
+                        WHEN user_age BETWEEN 31 and 40 then '31-40'
+                        WHEN user_age BETWEEN 41 and 50 then '41-50'
+                        ELSE '51-60'
+                END as fd
+            FROM filtered_data) as a
+        GROUP BY fd)
+  
+
+select * from filtered_data
+
+select education_name, count(education_name)
+FROM filtered_data
+group by education_name
+
+Select job_type, count(job_type)
+from filtered_data
+group by job_type
+
+/**select * from(
+select user_age, avg(user_age::decimal) OVER (ORDER BY user_age RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as "average_age"
+from filtered_data)
+where user_age>average_age
+**/
 
